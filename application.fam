@@ -1,0 +1,12 @@
+App(
+    appid="plenty_o_ducks",
+    name="Plenty O Ducks",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="main",
+    fap_description="Flappy Bird but to the extreme",
+    fap_author="Invizabel",
+    fap_weburl="https://github.com/Invizabel/duck",
+    fap_icon="assets/icon.png",
+    fap_category="Games",
+    fap_version="1.0"
+)
