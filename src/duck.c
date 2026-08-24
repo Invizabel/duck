@@ -41,6 +41,7 @@ void draw_portal(Canvas * canvas)
     {
         int x = portal[i][0];
         int y = portal[i][1];
+        
         if(x != 0 && y != 0)
         {
             canvas_draw_dot(canvas, x + 104, y + 16);
