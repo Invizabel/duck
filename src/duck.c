@@ -14,13 +14,13 @@ int player_y = 28;
 int hatch_x = 1;
 int hatch_y = 1;
 
-bool is_up = false;
-bool is_down = false;
-bool is_left = false;
-bool is_right = false;
+bool is_flapping = false;
 
 // Specials:
-int max_flap = 2;
+int max_flap_x = 1;
+int max_flap_y = 2;
+int duck_count = 1;
+int duck_swarm[9];
 
 // Sprite coordinates for drawing
 int player[][2] = {{5, 4}, {6, 4}, {7, 4}, {8, 4}, {3, 5}, {4, 5}, {5, 5}, {8, 5}, {9, 5}, {2, 6}, {3, 6}, {4, 6}, {8, 6}, {9, 6}, {2, 7}, {8, 7}, {2, 8}, {3, 8}, {4, 8}, {6, 8}, {7, 8}, {8, 8}, {4, 9}, {5, 9}, {6, 9}};
@@ -51,35 +51,30 @@ void draw_portal(Canvas * canvas)
 
 void draw_player(Canvas * canvas)
 {
-    if (is_up)
+    if (is_flapping)
     {
-        player_y -= max_flap;
+        player_y -= max_flap_y;
     }
     
-    else if (is_down)
+    else if (!is_flapping)
     {
-        player_y += max_flap;
+        player_y += max_flap_y;
     }
 
-    else if (is_left)
-    {
-        player_x -= max_flap;
-    }
-
-    else if (is_right)
-    {
-        player_x += max_flap;
-    }
+    player_x += max_flap_x;
     
     int array_size = sizeof(player) / sizeof(player[0]);
-    for (int a = 0; a < hatch_x; a++)
+    for (int j = 0; j < 9; j++)
     {
-        for (int b = 0; b < hatch_y; b++)
+        if (duck_swarm[j] == 1)
         {
+            int row = j % 3 + 1;
+            int column = j <= 2 ? 1 : j < 6 ? 2 : 3;
+
             for (int i = 0; i < array_size; i++)
             {
-                int x = player[i][0] + (8 * a);
-                int y = player[i][1] + (8 * b);
+                int x = player[i][0] + (8 * row);
+                int y = player[i][1] + (8 * column);
                 if(x != 0 && y != 0)
                 {
                     canvas_draw_dot(canvas, x + player_x, y + player_y);
@@ -102,14 +97,9 @@ static void draw_callback(Canvas * canvas, void * context)
         SCORE += 1;
         score_tracker = 0;
 
-        if (SCORE % 2 == 0 && hatch_y + 1 <= 3)
-        {
-            hatch_y += 1;
-        }
-        else if (hatch_x + 1 <= 3)
-        {
-            hatch_x += 1;
-        }
+        duck_swarm[duck_count] = 1;
+        duck_count += 1;
+        
     }
     
     collide_rect();
@@ -127,47 +117,17 @@ static void input_callback(InputEvent * event, void * context)
     FuriMessageQueue * queue = (FuriMessageQueue *)context;
     if(event->type == InputTypeShort || event->type == InputTypeRepeat || event->type == InputTypePress)
     {
-        if (event->key == InputKeyUp)
+        if (event->key == InputKeyOk)
         {
-            is_up = true;
-        }
-
-        else if (event->key == InputKeyDown)
-        {
-            is_down = true;
-        }
-
-        else if (event->key == InputKeyLeft)
-        {
-            is_left = true;
-        }
-
-        else if (event->key == InputKeyRight)
-        {
-            is_right = true;
+            is_flapping = true;
         }
     }
 
     if(event->type == InputTypeRelease)
     {
-        if (event->key == InputKeyUp)
+        if (event->key == InputKeyOk)
         {
-            is_up = false;
-        }
-        
-        else if (event->key == InputKeyDown)
-        {
-            is_down = false;
-        }
-
-        else if (event->key == InputKeyLeft)
-        {
-            is_left = false;
-        }
-
-        else if (event->key == InputKeyRight)
-        {
-            is_right = false;
+            is_flapping = false;
         }
     }
 
@@ -176,6 +136,12 @@ static void input_callback(InputEvent * event, void * context)
 
 int main()
 {
+    duck_swarm[0] = 1;
+    for (int i = 1; i < 9; i++)
+    {
+        duck_swarm[i] = 0;
+    }
+
     FuriMessageQueue * queue = furi_message_queue_alloc(8, sizeof(InputEvent));
     ViewPort * view_port = view_port_alloc();
     view_port_draw_callback_set(view_port, draw_callback, NULL);
