@@ -1,6 +1,6 @@
 from PIL import Image
 
-img = Image.open("portal.png").convert("RGBA")
+img = Image.open("duck.png").convert("RGBA")
 
 pixels = img.load()
 
